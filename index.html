@@ -1,4 +1,4 @@
-<<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +15,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-md">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-emerald-900/30">🤖</div>
       <div>
@@ -23,8 +23,8 @@
         <p class="text-xs text-slate-400">منصة مساعد المبيعات الذكي للمتاجر السعودية</p>
       </div>
     </div>
-    <div id="activeStoreIndicator" class="hidden text-xs bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-lg font-bold">
-      المتجر النشط: <span id="currentStoreNameLabel"></span>
+    <div id="activeStoreIndicator" class="text-xs bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-lg font-bold">
+      المتجر النشط: <span id="currentStoreNameLabel">متجر الفخامة</span>
     </div>
   </header>
 
@@ -32,7 +32,7 @@
   <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
 
     <!-- Mode Selector / Tabs -->
-    <div id="modeTabs" class="flex flex-wrap gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800">
+    <div id="modeTabs" class="flex flex-wrap gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800 shadow-inner">
       <button onclick="switchTab('dashboard')" id="tab_dashboard" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow">🏪 لوحة تحكم التاجر</button>
       <button onclick="switchTab('chat')" id="tab_chat" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">💬 تجربة شات سعود AI للعميل</button>
       <button onclick="switchTab('widget')" id="tab_widget" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">🔌 كود الربط (Widget)</button>
@@ -44,33 +44,37 @@
         <!-- Store Config Card -->
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
           <div>
-            <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">⚙️ إعدادات متجرك</h2>
+            <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">⚙️ إعدادات المتجر المستقل</h2>
             <div class="space-y-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">اسم المتجر</label>
+                <label class="block text-xs text-slate-400 mb-1">معرّف/اسم المتجر (فريد)</label>
+                <input id="storeIdInput" type="text" placeholder="store_1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">اسم المتجر الظاهر</label>
                 <input id="storeNameInput" type="text" placeholder="مثال: متجر العود الملكي" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">رقم الواتساب (لاستلام الطلبات)</label>
                 <input id="storeWaInput" type="text" placeholder="966500000000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
               </div>
-              <button onclick="saveStoreConfig()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white transition">حفظ إعدادات المتجر</button>
+              <button onclick="saveStoreConfig()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white transition shadow">حفظ إعدادات المتجر</button>
             </div>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-800">
-            <button onclick="shareStoreLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-700/50 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">🔗 نسخ رابط المتجر للعملاء</button>
+            <button onclick="shareStoreLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-700/50 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">🔗 نسخ رابط متجرك المخصص</button>
           </div>
         </div>
 
         <!-- Products Management Card -->
         <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col">
-          <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">📦 منتجات المتجر</h2>
+          <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">📦 منتجات وأصناف المتجر</h2>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-            <input id="prodName" type="text" placeholder="اسم المنتج" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+            <input id="prodName" type="text" placeholder="اسم المنتج/الصنف" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
             <input id="prodPrice" type="number" placeholder="السعر (ريال)" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
-            <button onclick="addProduct()" class="bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white py-2 transition">إضافة المنتج</button>
+            <button onclick="addProduct()" class="bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white py-2 transition shadow">إضافة صنف جديد</button>
           </div>
-          <div class="flex-grow overflow-y-auto max-h-[220px] bg-slate-950/50 border border-slate-800/80 rounded-2xl p-3">
+          <div class="flex-grow overflow-y-auto max-h-[240px] bg-slate-950/50 border border-slate-800/80 rounded-2xl p-3">
             <div id="productsList" class="space-y-2"></div>
           </div>
         </div>
@@ -79,7 +83,7 @@
 
     <!-- 2. AI Chatbot Tab -->
     <section id="sec_chat" class="hidden flex justify-center">
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[600px]">
+      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[620px]">
         <div class="bg-emerald-600 text-white p-4 flex items-center justify-between shadow">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">🤖</div>
@@ -96,8 +100,8 @@
         <div id="chatBox" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-950/50 text-xs"></div>
 
         <div class="p-3 bg-slate-900 border-t border-slate-800 flex gap-2">
-          <input id="chatInput" type="text" placeholder="اسأل سعود أو حدد ميزانيتك..." class="flex-grow px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <button onclick="handleUserChat()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition">إرسال</button>
+          <input id="chatInput" type="text" placeholder="اختر من الأزرار أو اكتب استفسارك..." class="flex-grow px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <button onclick="handleUserChat()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow">إرسال</button>
         </div>
       </div>
     </section>
@@ -106,35 +110,56 @@
     <section id="sec_widget" class="hidden space-y-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
         <h2 class="font-extrabold text-sm mb-2 text-emerald-400">🔌 كود بوت الشات الخاص بمتجرك (Widget)</h2>
-        <p class="text-xs text-slate-400 mb-4">قم بنسخ هذا السطر البرمجي وضعه في متجرك (سلة، زد، أو موقعك الخاص) ليظهر بوت "سعود AI" للعملاء مباشرة:</p>
+        <p class="text-xs text-slate-400 mb-4">انسخ هذا الكود وضعه في متجرك الإلكتروني ليظهر بوت "سعود AI" لعملاء متجرك حصرياً:</p>
         <textarea readonly id="widgetCodeArea" class="w-full h-32 bg-slate-950 border border-slate-800 rounded-xl p-3 text-[11px] text-emerald-300 font-mono focus:outline-none"></textarea>
-        <button onclick="copyWidgetCode()" class="mt-3 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow">نسخ الكود البرمجي</button>
+        <button onclick="copyWidgetCode()" class="mt-3 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow">نسخ كود الـ Widget</button>
       </div>
     </section>
 
   </main>
 
   <script>
-    // State management
-    let storeData = JSON.parse(localStorage.getItem('saud_store') || JSON.stringify({
-      name: "متجر الفخامة السعودي",
-      whatsapp: "966500000000",
-      products: [
-        { name: "عطر ملكي فاخر", price: 199 },
-        { name: "دهن عود صيامي", price: 299 },
-        { name: "مسك ابيض صيفي", price: 99 }
-      ]
-    }));
+    // نظام دعم المتاجر المستقلة عبر الرابط (Query Params) أو التخزين المحلّي
+    const urlParams = new URLSearchParams(window.location.search);
+    const storeIdParam = urlParams.get('store') || 'default_store';
 
+    let allStores = JSON.parse(localStorage.getItem('saud_all_stores') || '{}');
+    
+    if(!allStores[storeIdParam]) {
+      allStores[storeIdParam] = {
+        id: storeIdParam,
+        name: storeIdParam === 'default_store' ? "متجر الفخامة السعودي" : `متجر ${storeIdParam}`,
+        whatsapp: "966500000000",
+        products: [
+          { name: "عطر ملكي فاخر", price: 199 },
+          { name: "دهن عود صيامي", price: 299 },
+          { name: "مسك ابيض صيفي", price: 99 }
+        ]
+      };
+      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+    }
+
+    let storeData = allStores[storeIdParam];
     let chatState = { step: 'start', selectedProd: null };
 
     function saveStoreConfig() {
+      const newId = document.getElementById('storeIdInput').value.trim() || storeData.id;
       const name = document.getElementById('storeNameInput').value.trim();
       const wa = document.getElementById('storeWaInput').value.trim();
+      
       if(name) storeData.name = name;
       if(wa) storeData.whatsapp = wa;
-      localStorage.setItem('saud_store', JSON.stringify(storeData));
-      alert('تم حفظ إعدادات المتجر بنجاح ✅');
+      
+      if(newId !== storeData.id) {
+        storeData.id = newId;
+        allStores[newId] = storeData;
+        delete allStores[urlParams.get('store') || 'default_store'];
+        window.history.replaceState({}, '', `?store=${newId}`);
+      }
+      
+      allStores[storeData.id] = storeData;
+      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+      alert('تم حفظ إعدادات متجرك المستقل بنجاح ✅');
       updateUI();
     }
 
@@ -144,7 +169,9 @@
       if(!name || isNaN(price)) return alert('الرجاء إدخال اسم المنتج والسعر بشكل صحيح');
       
       storeData.products.push({ name, price });
-      localStorage.setItem('saud_store', JSON.stringify(storeData));
+      allStores[storeData.id] = storeData;
+      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+      
       document.getElementById('prodName').value = '';
       document.getElementById('prodPrice').value = '';
       renderProducts();
@@ -152,32 +179,34 @@
 
     function deleteProduct(index) {
       storeData.products.splice(index, 1);
-      localStorage.setItem('saud_store', JSON.stringify(storeData));
+      allStores[storeData.id] = storeData;
+      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
       renderProducts();
     }
 
     function renderProducts() {
       const list = document.getElementById('productsList');
       if(storeData.products.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">لا توجد منتجات مسجلة حالياً</p>`;
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">لا توجد منتجات مسجلة حالياً في هذا المتجر</p>`;
         return;
       }
       list.innerHTML = storeData.products.map((p, idx) => `
-        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-xs">
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-xs shadow-sm">
           <div><span class="font-bold text-white">${p.name}</span> — <span class="text-emerald-400 font-bold">${p.price} ر.س</span></div>
-          <button onclick="deleteProduct(${idx})" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 bg-red-950/40 rounded-lg">حذف</button>
+          <button onclick="deleteProduct(${idx})" class="text-red-400 hover:text-red-300 font-bold px-2.5 py-1 bg-red-950/40 rounded-lg transition">حذف</button>
         </div>
       `).join('');
     }
 
     function updateUI() {
+      document.getElementById('storeIdInput').value = storeData.id;
       document.getElementById('storeNameInput').value = storeData.name;
       document.getElementById('storeWaInput').value = storeData.whatsapp;
       document.getElementById('currentStoreNameLabel').innerText = storeData.name;
       document.getElementById('chatHeaderTitle').innerText = `سعود AI — ${storeData.name}`;
       
-      const currentUrl = window.location.href.split('?')[0];
-      document.getElementById('widgetCodeArea').value = `<script src="${currentUrl}?widget=true" data-store="${storeData.whatsapp}"><\/script>`;
+      const baseUrl = window.location.href.split('?')[0];
+      document.getElementById('widgetCodeArea').value = `<script src="${baseUrl}?store=${storeData.id}&widget=true"><\/script>`;
       renderProducts();
     }
 
@@ -192,9 +221,10 @@
     }
 
     function shareStoreLink() {
-      const url = window.location.href;
-      navigator.clipboard.writeText(url);
-      alert('تم نسخ رابط المنصة/المتجر بنجاح! يمكنك إرساله للعملاء 🔗');
+      const baseUrl = window.location.href.split('?')[0];
+      const storeLink = `${baseUrl}?store=${storeData.id}`;
+      navigator.clipboard.writeText(storeLink);
+      alert('تم نسخ رابط متجرك المستقل بنجاح! 🔗');
     }
 
     function copyWidgetCode() {
@@ -204,7 +234,7 @@
       alert('تم نسخ كود الـ Widget بنجاح ✅');
     }
 
-    // Chatbot logic (Updated with correct event bindings for buttons)
+    // Chatbot logic with dedicated selection buttons for each individual product
     function addBotMsg(html, options = []) {
       const box = document.getElementById('chatBox');
       const div = document.createElement('div');
@@ -214,7 +244,7 @@
       if(options.length > 0) {
         optsHTML = `<div class="flex flex-wrap gap-2 mt-2">`;
         options.forEach((opt, idx) => {
-          optsHTML += `<button type="button" data-option-index="${idx}" class="chat-option-btn text-[11px] bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-700 font-bold px-3 py-1.5 rounded-xl transition">${opt[0]}</button>`;
+          optsHTML += `<button type="button" data-option-index="${idx}" class="chat-option-btn text-[11px] bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-700 font-bold px-3 py-1.5 rounded-xl transition shadow-sm">${opt[0]}</button>`;
         });
         optsHTML += `</div>`;
       }
@@ -245,20 +275,47 @@
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
       chatState = { step: 'start', selectedProd: null };
-      addBotMsg(`أهلاً بك في <b>${storeData.name}</b> 👋<br>أنا <b>سعود (AI)</b>، كيف أقدر أساعدك باختيار المنتج اليوم؟`, [
-        ["🌿 استعراض المنتجات", () => showChatProducts()],
-        ["💰 ترشيح حسب الميزانية", () => askChatBudget()]
+      addBotMsg(`أهلاً بك في <b>${storeData.name}</b> 👋<br>أنا <b>سعود (AI)</b>، مساعد المبيعات الذكي. كيف أقدر أساعدك اليوم؟`, [
+        ["🌿 استعراض كافة المنتجات والأصناف", () => showChatProducts()],
+        ["💰 ترشيح منتج حسب الميزانية", () => askChatBudget()]
       ]);
     }
 
     function showChatProducts() {
-      addUserMsg("أرغب باستعراض المنتجات");
-      let html = "<b>قائمة منتجاتنا الحالية:</b><br><br>";
-      storeData.products.forEach((p, i) => {
-        html += `• ${p.name} — <b>${p.price} ر.س</b><br>`;
+      addUserMsg("أرغب باستعراض المنتجات والأصناف");
+      
+      if(storeData.products.length === 0) {
+        addBotMsg("عذراً، لا توجد منتجات مسجلة في هذا المتجر حالياً.");
+        return;
+      }
+
+      // بناء قائمة الأصناف بحيث يكون لكل صنف زر اختيار مستقل خاص به مباشرة
+      let html = "<b>إليك قائمة الأصناف المتوفرة، اضغط على المنتج لاختياره فوراً:</b><br><br>";
+      let productOptions = [];
+
+      storeData.products.forEach((p) => {
+        html += `• <b>${p.name}</b> — <span class="text-emerald-400 font-bold">${p.price} ر.س</span><br>`;
+        // إضافة زر مخصص لكل منتج منفرد
+        productOptions.push([
+          `🛒 اختيار: ${p.name} (${p.price} ر.س)`,
+          () => selectSpecificProduct(p)
+        ]);
       });
-      addBotMsg(html + "<br>هل تحب أساعدك باختيار منتج وتوجيه طلبك للواتساب؟", [
-        ["✅ نعم، اختر لي الأفضل", () => askChatBudget()]
+
+      // إضافة زر إضافي للعودة أو خيارات عامة
+      productOptions.push(["🔄 العودة للقائمة الرئيسية", () => initChatBot()]);
+
+      addBotMsg(html, productOptions);
+    }
+
+    function selectSpecificProduct(prod) {
+      addUserMsg(`أرغب في اختيار وشراء: ${prod.name}`);
+      chatState.selectedProd = prod;
+      chatState.step = 'order';
+      
+      addBotMsg(`اختيار موفق جداً! 📌<br><b>${prod.name}</b> بسعر <b>${prod.price} ريال</b>.<br><br>هل تحب أعتمد طلبك وأحوله مباشرة لواتساب البائع؟`, [
+        ["🚀 إرسال الطلب لواتساب البائع فوراً", () => sendToWhatsApp()],
+        ["🔄 العودة لاستعراض الأصناف", () => showChatProducts()]
       ]);
     }
 
@@ -267,7 +324,8 @@
       chatState.step = 'budget';
       addBotMsg("كم ميزانيتك التقريبية بالريال السعودي؟", [
         ["أقل من 150 ر.س", () => selectProductByBudget(150)],
-        ["أكثر من 150 ر.س", () => selectProductByBudget(500)]
+        ["أكثر من 150 ر.س", () => selectProductByBudget(1000)],
+        ["🔄 العودة للرئيسية", () => initChatBot()]
       ]);
     }
 
@@ -275,25 +333,23 @@
       addUserMsg(`ميزانيتي تقريباً: ${maxBudget} ريال`);
       const found = storeData.products.find(p => p.price <= maxBudget) || storeData.products[0];
       if(!found) {
-        addBotMsg("عذراً، لا توجد منتجات مطابقة للميزانية حالياً. تواصل معنا مباشرة عبر الواتساب.");
+        addBotMsg("عذراً، لا توجد منتجات مطابقة للميزانية حالياً.");
         return;
       }
-      chatState.selectedProd = found;
-      chatState.step = 'order';
-      addBotMsg(`رشحت لك هذا المنتج بناءً على طلبك:<br>📌 <b>${found.name}</b><br>💰 السعر: <b>${found.price} ريال</b><br><br>هل تحب أعتمد الطلب وأحوله لواتساب البائع؟`, [
-        ["🚀 إرسال الطلب لواتساب البائع مباشرة", () => sendToWhatsApp()],
-        ["🔄 اختيار منتج آخر", () => initChatBot()]
-      ]);
+      selectSpecificProduct(found);
     }
 
     function sendToWhatsApp() {
       const prod = chatState.selectedProd || storeData.products[0];
-      const msg = encodeURIComponent(`طلب جديد عبر بوت سعود AI:\n- المنتج: ${prod.name}\n- السعر: ${prod.price} ر.س\n- متجر: ${storeData.name}`);
+      if (!prod) return;
+      
+      const msg = encodeURIComponent(`طلب جديد عبر بوت سعود AI:\n- المتجر: ${storeData.name}\n- المنتج: ${prod.name}\n- السعر: ${prod.price} ر.س`);
       const waLink = `https://api.whatsapp.com/send?phone=${storeData.whatsapp}&text=${msg}`;
       
       addUserMsg("إرسال الطلب لواتساب البائع");
       addBotMsg(`تم تجهيز طلبك بنجاح ✅<br><br>اضغط الزر أدناه ليتم تحويلك فوراً لواتساب المتجر لإتمام الشراء:`, [
-        ["💬 فتح واتساب المتجر الآن", () => window.open(waLink, '_blank')]
+        ["💬 فتح واتساب المتجر الآن", () => window.open(waLink, '_blank')],
+        ["🔄 طلب منتج آخر", () => initChatBot()]
       ]);
     }
 
@@ -307,7 +363,7 @@
       if(chatState.step === 'order' || chatState.selectedProd) {
         sendToWhatsApp();
       } else {
-        addBotMsg("أهلاً بك، استلمت رسالتك. اضغط على الأزرار الظاهرة بالأعلى لترتيب طلبك بدقة واختيار المنتجات المناسبة.");
+        addBotMsg("أهلاً بك، استلمت رسالتك. اضغط على أزرار الأصناف الظاهرة بالأعلى لاختيار منتجك بكل سهولة ودقة.");
       }
     }
 
