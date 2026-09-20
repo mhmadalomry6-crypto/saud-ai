@@ -24,7 +24,7 @@
       </div>
     </div>
     <div id="activeStoreIndicator" class="text-xs bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-lg font-bold">
-      المتجر النشط: <span id="currentStoreNameLabel">متجر الفخامة</span>
+      المتجر النشط: <span id="currentStoreNameLabel">متجرك الجديد</span>
     </div>
   </header>
 
@@ -47,16 +47,20 @@
             <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">⚙️ إعدادات المتجر المستقل</h2>
             <div class="space-y-3">
               <div>
-                <label class="block text-xs text-slate-400 mb-1">معرّف/اسم المتجر (فريد)</label>
-                <input id="storeIdInput" type="text" placeholder="store_1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                <label class="block text-xs text-slate-400 mb-1">معرّف/اسم المتجر (فريد بالانجليزي بدون مسافات)</label>
+                <input id="storeIdInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">اسم المتجر الظاهر</label>
-                <input id="storeNameInput" type="text" placeholder="مثال: متجر العود الملكي" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                <input id="storeNameInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">رقم الواتساب (لاستلام الطلبات)</label>
-                <input id="storeWaInput" type="text" placeholder="966500000000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                <input id="storeWaInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">رابط عمليات / بوابات الدفع (اختياري)</label>
+                <input id="storeCheckoutInput" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
               </div>
               <button onclick="saveStoreConfig()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white transition shadow">حفظ إعدادات المتجر</button>
             </div>
@@ -120,49 +124,52 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const storeIdParam = urlParams.get('store') || 'default_store';
+    const storeIdParam = urlParams.get('store');
 
     let allStores = JSON.parse(localStorage.getItem('saud_all_stores') || '{}');
     
-    if(!allStores[storeIdParam]) {
-      allStores[storeIdParam] = {
-        id: storeIdParam,
-        name: storeIdParam === 'default_store' ? "متجر الفخامة السعودي" : `متجر ${storeIdParam}`,
-        whatsapp: "966500000000",
-        products: [
-          { name: "عطر ملكي فاخر", price: 199 },
-          { name: "دهن عود صيامي", price: 299 },
-          { name: "مسك ابيض صيفي", price: 99 }
-        ]
+    if(!storeIdParam || !allStores[storeIdParam]) {
+      storeData = {
+        id: storeIdParam || '',
+        name: '',
+        whatsapp: '',
+        checkoutUrl: '',
+        products: []
       };
-      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+    } else {
+      storeData = allStores[storeIdParam];
+      if(!storeData.checkoutUrl) storeData.checkoutUrl = '';
     }
 
-    let storeData = allStores[storeIdParam];
     let chatState = { selectedProd: null };
 
     function saveStoreConfig() {
-      const newId = document.getElementById('storeIdInput').value.trim() || storeData.id;
+      const newId = document.getElementById('storeIdInput').value.trim();
       const name = document.getElementById('storeNameInput').value.trim();
       const wa = document.getElementById('storeWaInput').value.trim();
+      const checkout = document.getElementById('storeCheckoutInput').value.trim();
       
-      if(name) storeData.name = name;
-      if(wa) storeData.whatsapp = wa;
-      
-      if(newId !== storeData.id) {
-        storeData.id = newId;
-        allStores[newId] = storeData;
-        delete allStores[urlParams.get('store') || 'default_store'];
-        window.history.replaceState({}, '', `?store=${newId}`);
+      if(!newId || !name || !wa) {
+        return alert('الرجاء تعبئة الحقول الأساسية (المعرّف، الاسم، ورقم الواتساب)');
       }
       
-      allStores[storeData.id] = storeData;
+      storeData.id = newId;
+      storeData.name = name;
+      storeData.whatsapp = wa;
+      storeData.checkoutUrl = checkout;
+      
+      allStores[newId] = storeData;
       localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+      
+      window.history.replaceState({}, '', `?store=${newId}`);
       alert('تم حفظ إعدادات متجرك المستقل بنجاح ✅');
       updateUI();
     }
 
     function addProduct() {
+      if(!storeData.id) {
+        return alert('الرجاء حفظ إعدادات المتجر أولاً قبل إضافة المنتجات');
+      }
       const name = document.getElementById('prodName').value.trim();
       const price = parseFloat(document.getElementById('prodPrice').value);
       if(!name || isNaN(price)) return alert('الرجاء إدخال اسم المنتج والسعر بشكل صحيح');
@@ -178,15 +185,17 @@
 
     function deleteProduct(index) {
       storeData.products.splice(index, 1);
-      allStores[storeData.id] = storeData;
-      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+      if(storeData.id) {
+        allStores[storeData.id] = storeData;
+        localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
+      }
       renderProducts();
     }
 
     function renderProducts() {
       const list = document.getElementById('productsList');
       if(storeData.products.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">لا توجد منتجات مسجلة حالياً في هذا المتجر</p>`;
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">لا توجد منتجات مسجلة حالياً، أضف منتجاتك لتظهر هنا</p>`;
         return;
       }
       list.innerHTML = storeData.products.map((p, idx) => `
@@ -201,11 +210,12 @@
       document.getElementById('storeIdInput').value = storeData.id;
       document.getElementById('storeNameInput').value = storeData.name;
       document.getElementById('storeWaInput').value = storeData.whatsapp;
-      document.getElementById('currentStoreNameLabel').innerText = storeData.name;
-      document.getElementById('chatHeaderTitle').innerText = `سعود AI — ${storeData.name}`;
+      document.getElementById('storeCheckoutInput').value = storeData.checkoutUrl || '';
+      document.getElementById('currentStoreNameLabel').innerText = storeData.name || 'متجرك الجديد';
+      document.getElementById('chatHeaderTitle').innerText = `سعود AI — ${storeData.name || 'المتجر'}`;
       
       const baseUrl = window.location.href.split('?')[0];
-      document.getElementById('widgetCodeArea').value = `<script src="${baseUrl}?store=${storeData.id}&widget=true"><\/script>`;
+      document.getElementById('widgetCodeArea').value = storeData.id ? `<script src="${baseUrl}?store=${storeData.id}&widget=true"><\/script>` : 'الرجاء حفظ معرّف المتجر أولاً لإنشاء الكود';
       renderProducts();
     }
 
@@ -220,6 +230,7 @@
     }
 
     function shareStoreLink() {
+      if(!storeData.id) return alert('الرجاء حفظ إعدادات المتجر أولاً للحصول على الرابط');
       const baseUrl = window.location.href.split('?')[0];
       const storeLink = `${baseUrl}?store=${storeData.id}`;
       navigator.clipboard.writeText(storeLink);
@@ -228,12 +239,12 @@
 
     function copyWidgetCode() {
       const area = document.getElementById('widgetCodeArea');
+      if(!storeData.id) return alert('الرجاء حفظ إعدادات المتجر أولاً');
       area.select();
       navigator.clipboard.writeText(area.value);
       alert('تم نسخ كود الـ Widget بنجاح ✅');
     }
 
-    // Chatbot logic with smart context-aware product answers
     function addBotMsg(html, options = []) {
       const box = document.getElementById('chatBox');
       const div = document.createElement('div');
@@ -274,7 +285,9 @@
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
       chatState = { selectedProd: null };
-      addBotMsg(`أهلاً بك في <b>${storeData.name}</b> 👋<br>أنا <b>سعود (AI)</b>، مساعد المبيعات الذكي. اسألني عن أي منتج أو صنف تبحث عنه وسأساعدك فوراً!`, [
+      
+      const sName = storeData.name || 'متجرنا';
+      addBotMsg(`أهلاً بك في <b>${sName}</b> 👋<br>أنا <b>سعود (AI)</b>، مساعد المبيعات الذكي. اسألني عن أي منتج أو صنف تبحث عنه وسأساعدك فوراً!`, [
         ["🌿 استعراض كافة المنتجات والأصناف", () => showChatProducts()],
         ["💰 ترشيح منتج حسب الميزانية", () => askChatBudget()]
       ]);
@@ -304,11 +317,12 @@
     }
 
     function selectSpecificProduct(prod) {
-      addUserMsg(`أرغب في اختيار وشراء: ${prod.name}`);
+      addUserMsg(`أرغب في اختيار: ${prod.name}`);
       chatState.selectedProd = prod;
       
-      addBotMsg(`اختيار موفق جداً! 📌<br><b>${prod.name}</b> بسعر <b>${prod.price} ريال</b>.<br><br>هل تحب أعتمد طلبك وأحوله مباشرة لواتساب البائع لإتمام الشراء؟`, [
-        ["🚀 إرسال الطلب لواتساب البائع فوراً", () => sendToWhatsApp()],
+      addBotMsg(`اختيار موفق جداً! 📌<br><b>${prod.name}</b> بسعر <b>${prod.price} ريال</b>.<br><br>كيف تود إتمام طلبك الآن؟`, [
+        ["💬 إرسال الطلب عبر واتساب التاجر", () => sendToWhatsApp()],
+        ["💳 الانتقال لعمليات الدفع الإلكترونية", () => goToCheckout()],
         ["🔄 العودة لاستعراض الأصناف", () => showChatProducts()]
       ]);
     }
@@ -335,18 +349,37 @@
     function sendToWhatsApp() {
       const prod = chatState.selectedProd || storeData.products[0];
       if (!prod) return;
+      if (!storeData.whatsapp) return alert('رقم الواتساب غير مضبوط في إعدادات المتجر');
       
       const msg = encodeURIComponent(`طلب جديد عبر بوت سعود AI:\n- المتجر: ${storeData.name}\n- المنتج: ${prod.name}\n- السعر: ${prod.price} ر.س`);
       const waLink = `https://api.whatsapp.com/send?phone=${storeData.whatsapp}&text=${msg}`;
       
-      addUserMsg("إرسال الطلب لواتساب البائع");
-      addBotMsg(`تم تجهيز طلبك بنجاح ✅<br><br>اضغط الزر أدناه ليتم تحويلك فوراً لواتساب المتجر لإتمام الشراء:`, [
+      addUserMsg("التواصل عبر واتساب التاجر");
+      addBotMsg(`تم تجهيز طلبك بنجاح ✅<br><br>اضغط الزر أدناه ليتم تحويلك فوراً لواتساب المتجر:`, [
         ["💬 فتح واتساب المتجر الآن", () => window.open(waLink, '_blank')],
         ["🔄 طلب منتج آخر", () => initChatBot()]
       ]);
     }
 
-    // Smart AI query handler for any product-related questions
+    function goToCheckout() {
+      const prod = chatState.selectedProd || storeData.products[0];
+      if (!prod) return;
+      
+      addUserMsg("الانتقال لعمليات الدفع");
+      
+      if(storeData.checkoutUrl) {
+        addBotMsg(`رائع جداً! يمكنك إتمام عملية الدفع لهذا المنتج (<b>${prod.name}</b> بقيمة <b>${prod.price} ر.س</b>) عبر بوابة الدفع الخاصة بالمتجر:`, [
+          ["💳 فتح صفحة بوابات الدفع الآن", () => window.open(storeData.checkoutUrl, '_blank')],
+          ["🔄 العودة للقائمة الرئيسية", () => initChatBot()]
+        ]);
+      } else {
+        addBotMsg(`عذراً، رابط عمليات الدفع لم يتم تفعيله أو إضافته من قِبل التاجر لهذا المتجر بعد.<br>هل تحب أن نحولك لواتساب التاجر بدلاً من ذلك؟`, [
+          ["💬 إرسال الطلب عبر واتساب التاجر", () => sendToWhatsApp()],
+          ["🔄 العودة للقائمة الرئيسية", () => initChatBot()]
+        ]);
+      }
+    }
+
     function handleUserChat() {
       const inp = document.getElementById('chatInput');
       const val = inp.value.trim();
@@ -355,8 +388,6 @@
       inp.value = '';
       
       const lowerVal = val.toLowerCase();
-
-      // فحص هل السؤال متعلق بمنتج معين مدخل في المتجر
       const matchedProduct = storeData.products.find(p => lowerVal.includes(p.name.toLowerCase()));
 
       if (matchedProduct) {
@@ -367,16 +398,15 @@
         if(storeData.products.length > 0) {
           selectSpecificProduct(storeData.products[0]);
         } else {
-          addBotMsg("عذراً، يرجى إضافة منتجات في المتجر أولاً لكي أتمكن من تحويل طلبك.");
+          addBotMsg("عذراً، يرجى إضافة منتجات في المتجر أولاً.");
         }
       } else {
-        // الرد الذكي العام المرتبط بمنتجات وأصناف المتجر
-        let reply = `بناءً على متجر <b>${storeData.name}</b>، نحن نُوفر الأجيال والأصناف التالية:<br><br>`;
+        let reply = `بناءً على متجر <b>${storeData.name || 'المتجر'}</b>، نحن نُوفر الأصناف التالية:<br><br>`;
         if(storeData.products.length > 0) {
           storeData.products.forEach(p => {
             reply += `• ${p.name} (${p.price} ر.س)<br>`;
           });
-          reply += `<br>هل تحب أن أساعدك في اختيار أحد هذه المنتجات وطلبها فوراً؟`;
+          reply += `<br>اختر أحد المنتجات وسأتيح لك خيار الواتساب أو الدفع مباشرة!`;
           
           let options = [
             ["🌿 استعراض واختيار المنتجات", () => showChatProducts()],
@@ -384,7 +414,7 @@
           ];
           addBotMsg(reply, options);
         } else {
-          addBotMsg("أهلاً بك، لا توجد منتجات مسجلة حالياً في هذا المتجر، يمكنك سؤال التاجر عن تفاصيل الأصناف القادمة.");
+          addBotMsg("أهلاً بك، لا توجد منتجات مسجلة حالياً في هذا المتجر.");
         }
       }
     }
