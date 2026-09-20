@@ -1,4 +1,4 @@
-<html lang="ar" dir="rtl">
+<<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -204,7 +204,7 @@
       alert('تم نسخ كود الـ Widget بنجاح ✅');
     }
 
-    // Chatbot logic
+    // Chatbot logic (Updated with correct event bindings for buttons)
     function addBotMsg(html, options = []) {
       const box = document.getElementById('chatBox');
       const div = document.createElement('div');
@@ -213,19 +213,23 @@
       let optsHTML = "";
       if(options.length > 0) {
         optsHTML = `<div class="flex flex-wrap gap-2 mt-2">`;
-        options.forEach(([label, fn], idx) => {
-          optsHTML += `<button id="opt_${Date.now()}_${idx}" class="text-[11px] bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-700 font-bold px-3 py-1.5 rounded-xl transition">${label}</button>`;
+        options.forEach((opt, idx) => {
+          optsHTML += `<button type="button" data-option-index="${idx}" class="chat-option-btn text-[11px] bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-700 font-bold px-3 py-1.5 rounded-xl transition">${opt[0]}</button>`;
         });
         optsHTML += `</div>`;
       }
+      
       div.innerHTML = `<div class="bg-slate-800 text-slate-100 p-3 rounded-2xl rounded-tr-none text-xs leading-relaxed shadow">${html}${optsHTML}</div>`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
 
-      options.forEach(([, fn], idx) => {
-        const btn = div.querySelector(`#opt_${Date.now()}_${idx}`);
-        if(btn) btn.onclick = fn;
-      });
+      if(options.length > 0) {
+        const buttons = div.querySelectorAll('.chat-option-btn');
+        buttons.forEach((btn) => {
+          const idx = btn.getAttribute('data-option-index');
+          btn.onclick = options[idx][1];
+        });
+      }
     }
 
     function addUserMsg(text) {
