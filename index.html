@@ -1,546 +1,117 @@
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>سعود AI — مساعد المبيعات الذكي للمتاجر</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Tajawal', sans-serif; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سعود AI - مساعد المتجر الذكي</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .chat-container { max-width: 400px; background: #fff; margin: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; height: 500px; }
+        .chat-header { background: #007bff; color: #fff; padding: 15px; text-align: center; font-weight: bold; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px 14px; border-radius: 8px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .bot-message { background: #e9ecef; color: #333; align-self: flex-start; }
+        .user-message { background: #007bff; color: #fff; align-self: flex-end; }
+        .chat-footer { padding: 10px; background: #fff; border-top: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px; }
+        .checkout-buttons { display: flex; gap: 5px; }
+        .btn-whatsapp { flex: 1; background: #25d366; color: #white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; }
+        .btn-copy { flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-whatsapp:hover { background: #20ba5a; }
+        .btn-copy:hover { background: #5a6268; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+<body>
 
-  <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-md">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-xl shadow-lg shadow-emerald-900/30">🤖</div>
-      <div>
-        <h1 class="font-black text-lg bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">سعود AI</h1>
-        <p class="text-xs text-slate-400">منصة مساعد المبيعات الذكي للمتاجر السعودية</p>
-      </div>
-    </div>
-    <div id="activeStoreIndicator" class="text-xs bg-emerald-950/80 text-emerald-300 border border-emerald-800 px-3 py-1.5 rounded-lg font-bold">
-      المتجر النشط: <span id="currentStoreNameLabel">متجرك الجديد</span>
-    </div>
-  </header>
-
-  <!-- Main Container -->
-  <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
-
-    <!-- Mode Selector / Tabs -->
-    <div id="modeTabs" class="flex flex-wrap gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800 shadow-inner">
-      <button onclick="switchTab('dashboard')" id="tab_dashboard" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow">🏪 إعدادات المتجر</button>
-      <button onclick="switchTab('orders')" id="tab_orders" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">📊 سجل الطلبات والنقرات</button>
-      <button onclick="switchTab('chat')" id="tab_chat" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">💬 تجربة الشات للعميل</button>
-      <button onclick="switchTab('widget')" id="tab_widget" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">🔌 كود الربط (Widget)</button>
-    </div>
-
-    <!-- 1. Merchant Dashboard Tab -->
-    <section id="sec_dashboard" class="space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Store Config Card -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
-          <div>
-            <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">⚙️ بيانات المتجر المستقل</h2>
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">معرّف/اسم المتجر (فريد بالانجليزي بدون مسافات)</label>
-                <input id="storeIdInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">اسم المتجر الظاهر</label>
-                <input id="storeNameInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">رقم الواتساب (لاستلام الطلبات)</label>
-                <input id="storeWaInput" type="text" placeholder="" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">رابط بوابات الدفع الإلكتروني (اختياري)</label>
-                <input id="storeCheckoutInput" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
-              </div>
-              <button onclick="saveStoreConfig()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white transition shadow">حفظ إعدادات المتجر</button>
-            </div>
-          </div>
-          <div class="mt-6 pt-4 border-t border-slate-800">
-            <button onclick="shareStoreLink()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-700/50 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow">🔗 نسخ رابط متجرك المخصص</button>
-          </div>
-        </div>
-
-        <!-- Products Management Card -->
-        <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col">
-          <h2 class="font-extrabold text-sm mb-4 text-emerald-400 flex items-center gap-2">📦 منتجات وأصناف المتجر</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-            <input id="prodName" type="text" placeholder="اسم المنتج/الصنف" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input id="prodPrice" type="number" placeholder="السعر (ريال)" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
-            <button onclick="addProduct()" class="bg-emerald-600 hover:bg-emerald-700 font-bold rounded-xl text-xs text-white py-2 transition shadow">إضافة صنف جديد</button>
-          </div>
-          <div class="flex-grow overflow-y-auto max-h-[240px] bg-slate-950/50 border border-slate-800/80 rounded-2xl p-3">
-            <div id="productsList" class="space-y-2"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. Orders & CRM Tab -->
-    <section id="sec_orders" class="hidden space-y-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 class="font-extrabold text-sm text-emerald-400">📊 سجل الطلبات والنقرات الواردة من البوت</h2>
-            <p class="text-xs text-slate-400 mt-1">متابعة فورية للعملاء الذين طلبوا إتمام عمليات الشراء من متجرك:</p>
-          </div>
-          <button onclick="clearOrdersLog()" class="px-4 py-2 bg-red-950/50 hover:bg-red-900/60 text-red-300 border border-red-800 text-xs font-bold rounded-xl transition">مسح السجل</button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-right text-xs">
-            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="p-3">التاريخ والوقت</th>
-                <th class="p-3">المنتجات المطلوبة</th>
-                <th class="p-3">المجموع الكلي</th>
-                <th class="p-3">طريقة الإتمام</th>
-              </tr>
-            </thead>
-            <tbody id="ordersTableBody" class="divide-y divide-slate-800/60"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. AI Chatbot Tab -->
-    <section id="sec_chat" class="hidden flex justify-center">
-      <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[640px]">
-        <div class="bg-emerald-600 text-white p-4 flex items-center justify-between shadow">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">🤖</div>
-            <div>
-              <h2 id="chatHeaderTitle" class="font-extrabold text-xs">سعود AI — مساعد المبيعات</h2>
-              <span class="text-[10px] text-emerald-100 flex items-center gap-1 mt-0.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> متصل للرد الفوري باللهجة السعودية
-              </span>
-            </div>
-          </div>
-          <button onclick="showCart()" class="text-[10px] bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1">
-            🛒 السلة (<span id="cartCountBadge">0</span>)
-          </button>
-        </div>
-
-        <div id="chatBox" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-950/50 text-xs"></div>
-
-        <div class="p-3 bg-slate-900 border-t border-slate-800 flex gap-2">
-          <input id="chatInput" type="text" placeholder="اكتب سؤالك بلهجتك (مثال: وش عندكم، بكم السلعة...)" class="flex-grow px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <button onclick="handleUserChat()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow">إرسال</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. Widget Integration Tab -->
-    <section id="sec_widget" class="hidden space-y-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
-        <h2 class="font-extrabold text-sm mb-2 text-emerald-400">🔌 كود بوت الشات الخاص بمتجرك (Widget)</h2>
-        <p class="text-xs text-slate-400 mb-4">انسخ هذا الكود وضعه في متجرك الإلكتروني ليظهر بوت "سعود AI" لعملاء متجرك حصرياً:</p>
-        <textarea readonly id="widgetCodeArea" class="w-full h-32 bg-slate-950 border border-slate-800 rounded-xl p-3 text-[11px] text-emerald-300 font-mono focus:outline-none"></textarea>
-        <button onclick="copyWidgetCode()" class="mt-3 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow">نسخ كود الـ Widget</button>
-      </div>
-    </section>
-
-  </main>
-
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const storeIdParam = urlParams.get('store');
-
-    let allStores = JSON.parse(localStorage.getItem('saud_all_stores') || '{}');
-    
-    if(!storeIdParam || !allStores[storeIdParam]) {
-      storeData = {
-        id: storeIdParam || '',
-        name: '',
-        whatsapp: '',
-        checkoutUrl: '',
-        products: [],
-        orders: []
-      };
-    } else {
-      storeData = allStores[storeIdParam];
-      if(!storeData.checkoutUrl) storeData.checkoutUrl = '';
-      if(!storeData.orders) storeData.orders = [];
-    }
-
-    let customerCart = [];
-
-    function saveStoreConfig() {
-      const newId = document.getElementById('storeIdInput').value.trim();
-      const name = document.getElementById('storeNameInput').value.trim();
-      const wa = document.getElementById('storeWaInput').value.trim();
-      const checkout = document.getElementById('storeCheckoutInput').value.trim();
-      
-      if(!newId || !name || !wa) {
-        return alert('الرجاء تعبئة الحقول الأساسية (المعرّف، الاسم، ورقم الواتساب)');
-      }
-      
-      storeData.id = newId;
-      storeData.name = name;
-      storeData.whatsapp = wa;
-      storeData.checkoutUrl = checkout;
-      
-      allStores[newId] = storeData;
-      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
-      
-      window.history.replaceState({}, '', `?store=${newId}`);
-      alert('تم حفظ إعدادات متجرك بنجاح ✅');
-      updateUI();
-    }
-
-    function addProduct() {
-      if(!storeData.id) {
-        return alert('الرجاء حفظ إعدادات المتجر أولاً قبل إضافة المنتجات');
-      }
-      const name = document.getElementById('prodName').value.trim();
-      const price = parseFloat(document.getElementById('prodPrice').value);
-      if(!name || isNaN(price)) return alert('الرجاء إدخال اسم المنتج والسعر بشكل صحيح');
-      
-      storeData.products.push({ name, price });
-      allStores[storeData.id] = storeData;
-      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
-      
-      document.getElementById('prodName').value = '';
-      document.getElementById('prodPrice').value = '';
-      renderProducts();
-    }
-
-    function deleteProduct(index) {
-      storeData.products.splice(index, 1);
-      if(storeData.id) {
-        allStores[storeData.id] = storeData;
-        localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
-      }
-      renderProducts();
-    }
-
-    function renderProducts() {
-      const list = document.getElementById('productsList');
-      if(storeData.products.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">لا توجد منتجات مسجلة حالياً، أضف منتجاتك لتظهر هنا</p>`;
-        return;
-      }
-      list.innerHTML = storeData.products.map((p, idx) => `
-        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-xs shadow-sm">
-          <div><span class="font-bold text-white">${p.name}</span> — <span class="text-emerald-400 font-bold">${p.price} ر.س</span></div>
-          <button onclick="deleteProduct(${idx})" class="text-red-400 hover:text-red-300 font-bold px-2.5 py-1 bg-red-950/40 rounded-lg transition">حذف</button>
-        </div>
-      `).join('');
-    }
-
-    function renderOrdersTable() {
-      const tbody = document.getElementById('ordersTableBody');
-      if(!storeData.orders || storeData.orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500">لا توجد طلبات مسجلة حتى الآن. جرب تجربة الشات وإتمام طلب.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = storeData.orders.slice().reverse().map(o => `
-        <tr class="hover:bg-slate-950/40 transition">
-          <td class="p-3 text-slate-300">${o.date}</td>
-          <td class="p-3 font-bold text-white">${o.items}</td>
-          <td class="p-3 text-emerald-400 font-extrabold">${o.total} ر.س</td>
-          <td class="p-3"><span class="px-2.5 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-lg font-medium">${o.method}</span></td>
-        </tr>
-      `).join('');
-    }
-
-    function clearOrdersLog() {
-      if(confirm('هل أنت متأكد من مسح سجل الطلبات؟')) {
-        storeData.orders = [];
-        if(storeData.id) {
-          allStores[storeData.id] = storeData;
-          localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
-        }
-        renderOrdersTable();
-      }
-    }
-
-    function updateUI() {
-      document.getElementById('storeIdInput').value = storeData.id;
-      document.getElementById('storeNameInput').value = storeData.name;
-      document.getElementById('storeWaInput').value = storeData.whatsapp;
-      document.getElementById('storeCheckoutInput').value = storeData.checkoutUrl || '';
-      document.getElementById('currentStoreNameLabel').innerText = storeData.name || 'متجرك الجديد';
-      document.getElementById('chatHeaderTitle').innerText = `سعود AI — ${storeData.name || 'المتجر'}`;
-      
-      const baseUrl = window.location.href.split('?')[0];
-      document.getElementById('widgetCodeArea').value = storeData.id ? `<script src="${baseUrl}?store=${storeData.id}&widget=true"><\/script>` : 'الرجاء حفظ معرّف المتجر أولاً لإنشاء الكود';
-      renderProducts();
-      renderOrdersTable();
-    }
-
-    function switchTab(tab) {
-      ['dashboard', 'orders', 'chat', 'widget'].forEach(t => {
-        document.getElementById(`sec_${t}`).classList.add('hidden');
-        document.getElementById(`tab_${t}`).className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700";
-      });
-      document.getElementById(`sec_${tab}`).classList.remove('hidden');
-      document.getElementById(`tab_${tab}`).className = "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition bg-emerald-600 text-white shadow";
-      if(tab === 'chat') initChatBot();
-      if(tab === 'orders') renderOrdersTable();
-    }
-
-    function shareStoreLink() {
-      if(!storeData.id) return alert('الرجاء حفظ إعدادات المتجر أولاً للحصول على الرابط');
-      const baseUrl = window.location.href.split('?')[0];
-      const storeLink = `${baseUrl}?store=${storeData.id}`;
-      navigator.clipboard.writeText(storeLink);
-      alert('تم نسخ رابط متجرك المخصص بنجاح! 🔗');
-    }
-
-    function copyWidgetCode() {
-      const area = document.getElementById('widgetCodeArea');
-      if(!storeData.id) return alert('الرجاء حفظ إعدادات المتجر أولاً');
-      area.select();
-      navigator.clipboard.writeText(area.value);
-      alert('تم نسخ كود الـ Widget بنجاح ✅');
-    }
-
-    function addBotMsg(html, options = []) {
-      const box = document.getElementById('chatBox');
-      const div = document.createElement('div');
-      div.className = "flex flex-col items-start space-y-2 max-w-[85%]";
-      
-      let optsHTML = "";
-      if(options.length > 0) {
-        optsHTML = `<div class="flex flex-wrap gap-2 mt-2">`;
-        options.forEach((opt, idx) => {
-          optsHTML += `<button type="button" data-option-index="${idx}" class="chat-option-btn text-[11px] bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-700 font-bold px-3 py-1.5 rounded-xl transition shadow-sm">${opt[0]}</button>`;
-        });
-        optsHTML += `</div>`;
-      }
-      
-      div.innerHTML = `<div class="bg-slate-800 text-slate-100 p-3 rounded-2xl rounded-tr-none text-xs leading-relaxed shadow">${html}${optsHTML}</div>`;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-
-      if(options.length > 0) {
-        const buttons = div.querySelectorAll('.chat-option-btn');
-        buttons.forEach((btn) => {
-          const idx = btn.getAttribute('data-option-index');
-          btn.onclick = options[idx][1];
-        });
-      }
-    }
-
-    function addUserMsg(text) {
-      const box = document.getElementById('chatBox');
-      const div = document.createElement('div');
-      div.className = "flex flex-col items-end space-y-1 ml-auto max-w-[85%]";
-      div.innerHTML = `<div class="bg-emerald-600 text-white p-3 rounded-2xl rounded-tl-none text-xs leading-relaxed shadow">${text}</div>`;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function initChatBot() {
-      const box = document.getElementById('chatBox');
-      box.innerHTML = '';
-      customerCart = [];
-      updateCartBadge();
-      
-      const sName = storeData.name || 'متجرنا';
-      addBotMsg(`يا هلا فيك بـ <b>${sName}</b> يالغالي 👋<br>أنا <b>سعود</b>، مساعدك الذكي. سم، وش تبي تبحث عنه أو تستفسر عنه اليوم؟`, [
-        ["🌿 استعراض المنتجات وإضافتها للسلة", () => showChatProducts()],
-        ["💰 عطني المنتجات اللي على قد ميزانيتي", () => askChatBudget()]
-      ]);
-    }
-
-    function updateCartBadge() {
-      document.getElementById('cartCountBadge').innerText = customerCart.length;
-    }
-
-    function showChatProducts() {
-      addUserMsg("أبي أشوف المنتجات والأصناف اللي عندكم");
-      
-      if(storeData.products.length === 0) {
-        addBotMsg("عذراً يالغالي، ما فيه منتجات مسجلة في المتجر حالياً.");
-        return;
-      }
-
-      let html = "<b>إليك الأصناف المتوفرة، اضغط على المنتج لإضافته لسلتك فوراً:</b><br><br>";
-      let productOptions = [];
-
-      storeData.products.forEach((p) => {
-        html += `• <b>${p.name}</b> — <span class="text-emerald-400 font-bold">${p.price} ر.س</span><br>`;
-        productOptions.push([
-          `➕ إضافة لسلة: ${p.name}`,
-          () => addToCart(p)
-        ]);
-      });
-
-      if(customerCart.length > 0) {
-        productOptions.push([`🛒 عرض السلة ودفع الطلب (${customerCart.length})`, () => showCart()]);
-      }
-      productOptions.push(["🔄 العودة للرئيسية", () => initChatBot()]);
-      
-      addBotMsg(html, productOptions);
-    }
-
-    function addToCart(prod) {
-      customerCart.push(prod);
-      updateCartBadge();
-      addUserMsg(`إضافة المنتج: ${prod.name}`);
-      
-      let total = customerCart.reduce((sum, item) => sum + item.price, 0);
-      addBotMsg(`تم إضافة <b>${prod.name}</b> لسلتك بنجاح ✅<br>عدد المنتجات بالسلة: <b>${customerCart.length}</b> | المجموع الحالي: <span class="text-emerald-400 font-bold">${total} ر.س</span><br><br>تبي تكفي تسوق وتضيف غيره، ولا تبي تنهي الطلب؟`, [
-        ["➕ تصفح منتجات وإضافة المزيد", () => showChatProducts()],
-        ["🛒 عرض السلة وإتمام الطلب", () => showCart()],
-        ["🔄 العودة للرئيسية", () => initChatBot()]
-      ]);
-    }
-
-    function showCart() {
-      addUserMsg("أبي أشوش على محتويات السلة");
-      
-      if(customerCart.length === 0) {
-        addBotMsg("سلتك فاضية يالغالي! تبي نستعرض لك المنتجات؟", [
-          ["🌿 استعراض المنتجات", () => showChatProducts()],
-          ["🔄 العودة للرئيسية", () => initChatBot()]
-        ]);
-        return;
-      }
-
-      let html = "<b>🛒 سلة المشتريات الخاصة بك:</b><br><br>";
-      let total = 0;
-      customerCart.forEach((item, idx) => {
-        html += `${idx + 1}. <b>${item.name}</b> — <span class="text-emerald-400 font-bold">${item.price} ر.س</span><br>`;
-        total += item.price;
-      });
-
-      html += `<br><b>المجموع الكلي: <span class="text-emerald-400 font-extrabold text-sm">${total} ريال سعودي</span></b><br><br>كيف تود إتمام طلبك الآن؟`;
-
-      addBotMsg(html, [
-        ["💬 إرسال الطلب عبر واتساب التاجر", () => finalizeOrder('واتساب التاجر')],
-        ["💳 الانتقال لدفع بوابات الدفع الإلكترونية", () => finalizeOrder('بوابة الدفع الإلكترونية')],
-        ["🌿 إضافة منتجات أخرى", () => showChatProducts()],
-        ["🗑️ تفريغ السلة", () => { customerCart = []; updateCartBadge(); initChatBot(); }]
-      ]);
-    }
-
-    function askChatBudget() {
-      addUserMsg("ابي منتج على قد ميزانيتي");
-      addBotMsg("كم ميزانيتك التقريبية بالريال السعودي يالغالي؟", [
-        ["أقل من 150 ر.س", () => selectProductByBudget(150)],
-        ["أكثر من 150 ر.س", () => selectProductByBudget(1000)],
-        ["🔄 العودة للرئيسية", () => initChatBot()]
-      ]);
-    }
-
-    function selectProductByBudget(maxBudget) {
-      addUserMsg(`ميزانيتي تقريباً: ${maxBudget} ريال`);
-      const found = storeData.products.find(p => p.price <= maxBudget) || storeData.products[0];
-      if(!found) {
-        addBotMsg("عذراً، ما لقيت منتج مطابق لميزانيتك حالياً.");
-        return;
-      }
-      addToCart(found);
-    }
-
-    function finalizeOrder(method) {
-      if(customerCart.length === 0) return alert('السلة فارغة!');
-      
-      let total = customerCart.reduce((sum, item) => sum + item.price, 0);
-      let itemsStr = customerCart.map(i => `${i.name} (${i.price}ر.س)`).join(', ');
-      
-      // حفظ الطلب في سجل التاجر (Mini-CRM)
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'});
-      
-      storeData.orders.push({
-        date: dateStr,
-        items: itemsStr,
-        total: total,
-        method: method
-      });
-      
-      allStores[storeData.id] = storeData;
-      localStorage.setItem('saud_all_stores', JSON.stringify(allStores));
-
-      addUserMsg(`إتمام الطلب عبر: ${method}`);
-
-      if(method === 'واتساب التاجر') {
-        if (!storeData.whatsapp) return alert('رقم الواتساب غير مضبوط في إعدادات المتجر');
-        const msg = encodeURIComponent(`طلب جديد عبر سلة سعود AI:\n- المتجر: ${storeData.name}\n- المنتجات: ${itemsStr}\n- المجموع: ${total} ر.س`);
-        const waLink = `https://api.whatsapp.com/send?phone=${storeData.whatsapp}&text=${msg}`;
+    <div class="chat-container">
+        <!-- هيدر البوت يظهر اسم المتجر -->
+        <div class="chat-header" id="storeTitle">مساعد المتجر الذكي</div>
         
-        addBotMsg(`تم تسجيل طلبك وحفظه في سجل المتجر بنجاح ✅<br><br>اضغط الزر أدناه ليتم تحويلك مباشرة لواتساب البائع ومعك تفاصيل السلة كاملة:`, [
-          ["💬 فتح واتساب المتجر الآن", () => window.open(waLink, '_blank')],
-          ["🔄 طلب جديد", () => initChatBot()]
-        ]);
-      } else {
-        if(storeData.checkoutUrl) {
-          addBotMsg(`تم تسجيل طلبك في سجل المتجر بنجاح ✅<br><br>يمكنك إتمام عملية الدفع الإجمالية بقيمة (<b>${total} ر.س</b>) عبر بوابات الدفع الإلكترونية:`, [
-            ["💳 فتح صفحة بوابات الدفع", () => window.open(storeData.checkoutUrl, '_blank')],
-            ["🔄 العودة للرئيسية", () => initChatBot()]
-          ]);
-        } else {
-          addBotMsg(`رابط بوابات الدفع لم يقم التاجر بإضافته بعد.<br>هل تحب أن نحولك لواتساب التاجر بدلاً من ذلك؟`, [
-            ["💬 إرسال الطلب لواتساب التاجر", () => finalizeOrder('واتساب التاجر')],
-            ["🔄 العودة للرئيسية", () => initChatBot()]
-          ]);
+        <!-- رسائل الشات -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- رسالة الترحيب بتنزل هنا تلقائياً -->
+        </div>
+
+        <!-- أزرار الطلب والنسخ -->
+        <div class="chat-footer">
+            <div class="checkout-buttons">
+                <button onclick="sendWhatsAppOrder()" class="btn-whatsapp">إرسال للواتساب 🟢</button>
+                <button onclick="copyOrderDetails()" class="btn-copy" id="copyBtn">نسخ الطلب 📋</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. محاكاة بيانات المتجر (كل تاجر وله بياناته الخاصة اللي تجيه عبر رابط الـ store)
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('store') || 'default_store';
+
+        // قاعدة بيانات تجريبية للمتاجر (مستقبلاً تقرأها من السيرفر)
+        const storesDatabase = {
+            "azzar-perfumes": {
+                storeName: "متجر أزار للعطور 🌸",
+                whatsappNumber: "966500000000",
+                welcomeMessage: "يا هلا فيك بمتجر أزار للعطور! تبغى تشوف عروضنا الجديدة ولا تبحث عن عطر معين؟",
+                sampleOrder: "مرحباً، أريد طلب:\n1x عطر أزار المركز\nالإجمالي: 150 ريال"
+            },
+            "clothes-store": {
+                storeName: "متجر الأناقة للملابس 👔",
+                whatsappNumber: "966511111111",
+                welcomeMessage: "أهلاً بك في متجر الأناقة! نوفر لك أحدث صيحات الموضة. تفضل اعرض طلبك.",
+                sampleOrder: "مرحباً، أريد طلب:\n1x ثوب رجالي مقاس 58\nالإجمالي: 220 ريال"
+            },
+            "default_store": {
+                storeName: "متجر سعود AI التجريبي",
+                whatsappNumber: "966500000000",
+                welcomeMessage: "أهلاً بك! أنا مساعدك الذكي لتسهيل تسوقك.",
+                sampleOrder: "مرحباً، أريد الاستفسار عن المنتجات المتاحة."
+            }
+        };
+
+        // اختيار بيانات المتجر بناءً على الـ ID الموجود في الرابط (عزل البيانات)
+        const currentStore = storesDatabase[storeId] || storesDatabase["default_store"];
+
+        // 2. تحديث واجهة المتجر برمجياً
+        document.getElementById("storeTitle").innerText = currentStore.storeName;
+
+        // دالة إضافة رسالة للشات
+        function appendMessage(text, senderClass) {
+            const messagesContainer = document.getElementById("chatMessages");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${senderClass}`;
+            messageDiv.innerText = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-      }
-    }
 
-    // محرك الذكاء الاصطناعي لفهم اللهجة السعودية وتحليل الردود الحرة
-    function handleUserChat() {
-      const inp = document.getElementById('chatInput');
-      const val = inp.value.trim();
-      if(!val) return;
-      addUserMsg(val);
-      inp.value = '';
-      
-      const lower = val.toLowerCase();
-      
-      // مطابقة الذكاء الاصطناعي المبسط باللهجة السعودية
-      const matchedProduct = storeData.products.find(p => lower.includes(p.name.toLowerCase()));
+        // تشغيل البوت برمجياً عند الفتح وعرض رسالة الترحيب الخاصة بالتاجر
+        window.onload = function() {
+            appendMessage(currentStore.welcomeMessage, 'bot-message');
+        };
 
-      if (matchedProduct) {
-        addToCart(matchedProduct);
-      } else if (lower.includes('سعر') || lower.includes('بكم') || lower.includes('أسعار') || lower.includes('المنتجات') || lower.includes('ابي') || lower.includes('ابغى') || lower.includes('عندكم')) {
-        showChatProducts();
-      } else if (lower.includes('سلة') || lower.includes('السلة') || lower.includes('طلباتي') || lower.includes('اشتري')) {
-        showCart();
-      } else if (lower.includes('تواصل') || lower.includes('واتساب') || lower.includes('رقم') || lower.includes('اتصل')) {
-        if(customerCart.length > 0) {
-          finalizeOrder('واتساب التاجر');
-        } else if(storeData.products.length > 0) {
-          addToCart(storeData.products[0]);
-        } else {
-          addBotMsg("يا هلا، ما فيه منتجات مسجلة حالياً بالمتجر.");
+        // 3. دالة إرسال الطلب عبر الواتساب
+        function sendWhatsAppOrder() {
+            const text = encodeURIComponent(currentStore.sampleOrder);
+            const url = `https://wa.me/${currentStore.whatsappNumber}?text=${text}`;
+            window.open(url, '_blank');
         }
-      } else {
-        // رد ذكي افتراضي باللهجة السعودية الودية
-        let reply = `سم طال عمرك! في متجر <b>${storeData.name || 'المتجر'}</b> نخدمك بكل عيوننا. هذه أبرز منتجاتنا الحالية:<br><br>`;
-        if(storeData.products.length > 0) {
-          storeData.products.forEach(p => {
-            reply += `• ${p.name} (${p.price} ر.س)<br>`;
-          });
-          reply += `<br>تبي أضيف لك أي واحد منها للسلة؟`;
-          
-          addBotMsg(reply, [
-            ["🌿 استعراض واختيار المنتجات", () => showChatProducts()],
-            ["🛒 عرض السلة والدفع", () => showCart()],
-            ["💬 التواصل مع البائع", () => finalizeOrder('واتساب التاجر')]
-          ]);
-        } else {
-          addBotMsg("أهلاً بك يالغالي، نعتذر منك لا توجد منتجات مسجلة في المتجر حتى الآن.");
+
+        // 4. دالة نسخ تفاصيل الطلب (المنقذ للعميل)
+        function copyOrderDetails() {
+            const textOrder = currentStore.sampleOrder;
+            
+            navigator.clipboard.writeText(textOrder).then(() => {
+                const btn = document.getElementById("copyBtn");
+                btn.innerHTML = "تم النسخ بنجاح! ✅";
+                btn.style.backgroundColor = "#28a745";
+                
+                setTimeout(() => {
+                    btn.innerHTML = "نسخ الطلب 📋";
+                    btn.style.backgroundColor = ""; 
+                }, 3000);
+            }).catch(err => {
+                alert("تعذر النسخ، حاول مرة أخرى.");
+            });
         }
-      }
-    }
-
-    document.getElementById('chatInput').onkeydown = (e) => { if(e.key === 'Enter') handleUserChat(); };
-
-    updateUI();
-  </script>
+    </script>
 </body>
 </html>
