@@ -100,7 +100,7 @@
         <div id="chatBox" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-950/50 text-xs"></div>
 
         <div class="p-3 bg-slate-900 border-t border-slate-800 flex gap-2">
-          <input id="chatInput" type="text" placeholder="اختر من الأزرار أو اكتب استفسارك..." class="flex-grow px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <input id="chatInput" type="text" placeholder="اكتب سؤالك أو استفسارك عن المنتجات..." class="flex-grow px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
           <button onclick="handleUserChat()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow">إرسال</button>
         </div>
       </div>
@@ -119,7 +119,6 @@
   </main>
 
   <script>
-    // نظام دعم المتاجر المستقلة عبر الرابط (Query Params) أو التخزين المحلّي
     const urlParams = new URLSearchParams(window.location.search);
     const storeIdParam = urlParams.get('store') || 'default_store';
 
@@ -140,7 +139,7 @@
     }
 
     let storeData = allStores[storeIdParam];
-    let chatState = { step: 'start', selectedProd: null };
+    let chatState = { selectedProd: null };
 
     function saveStoreConfig() {
       const newId = document.getElementById('storeIdInput').value.trim() || storeData.id;
@@ -234,7 +233,7 @@
       alert('تم نسخ كود الـ Widget بنجاح ✅');
     }
 
-    // Chatbot logic with dedicated selection buttons for each individual product
+    // Chatbot logic with smart context-aware product answers
     function addBotMsg(html, options = []) {
       const box = document.getElementById('chatBox');
       const div = document.createElement('div');
@@ -274,8 +273,8 @@
     function initChatBot() {
       const box = document.getElementById('chatBox');
       box.innerHTML = '';
-      chatState = { step: 'start', selectedProd: null };
-      addBotMsg(`أهلاً بك في <b>${storeData.name}</b> 👋<br>أنا <b>سعود (AI)</b>، مساعد المبيعات الذكي. كيف أقدر أساعدك اليوم؟`, [
+      chatState = { selectedProd: null };
+      addBotMsg(`أهلاً بك في <b>${storeData.name}</b> 👋<br>أنا <b>سعود (AI)</b>، مساعد المبيعات الذكي. اسألني عن أي منتج أو صنف تبحث عنه وسأساعدك فوراً!`, [
         ["🌿 استعراض كافة المنتجات والأصناف", () => showChatProducts()],
         ["💰 ترشيح منتج حسب الميزانية", () => askChatBudget()]
       ]);
@@ -289,31 +288,26 @@
         return;
       }
 
-      // بناء قائمة الأصناف بحيث يكون لكل صنف زر اختيار مستقل خاص به مباشرة
-      let html = "<b>إليك قائمة الأصناف المتوفرة، اضغط على المنتج لاختياره فوراً:</b><br><br>";
+      let html = "<b>إليك قائمة الأصناف المتوفرة لدينا، اضغط على المنتج لاختياره فوراً:</b><br><br>";
       let productOptions = [];
 
       storeData.products.forEach((p) => {
         html += `• <b>${p.name}</b> — <span class="text-emerald-400 font-bold">${p.price} ر.س</span><br>`;
-        // إضافة زر مخصص لكل منتج منفرد
         productOptions.push([
           `🛒 اختيار: ${p.name} (${p.price} ر.س)`,
           () => selectSpecificProduct(p)
         ]);
       });
 
-      // إضافة زر إضافي للعودة أو خيارات عامة
       productOptions.push(["🔄 العودة للقائمة الرئيسية", () => initChatBot()]);
-
       addBotMsg(html, productOptions);
     }
 
     function selectSpecificProduct(prod) {
       addUserMsg(`أرغب في اختيار وشراء: ${prod.name}`);
       chatState.selectedProd = prod;
-      chatState.step = 'order';
       
-      addBotMsg(`اختيار موفق جداً! 📌<br><b>${prod.name}</b> بسعر <b>${prod.price} ريال</b>.<br><br>هل تحب أعتمد طلبك وأحوله مباشرة لواتساب البائع؟`, [
+      addBotMsg(`اختيار موفق جداً! 📌<br><b>${prod.name}</b> بسعر <b>${prod.price} ريال</b>.<br><br>هل تحب أعتمد طلبك وأحوله مباشرة لواتساب البائع لإتمام الشراء؟`, [
         ["🚀 إرسال الطلب لواتساب البائع فوراً", () => sendToWhatsApp()],
         ["🔄 العودة لاستعراض الأصناف", () => showChatProducts()]
       ]);
@@ -321,7 +315,6 @@
 
     function askChatBudget() {
       addUserMsg("ساعدني باختيار المنتج المناسب لميزانيتي");
-      chatState.step = 'budget';
       addBotMsg("كم ميزانيتك التقريبية بالريال السعودي؟", [
         ["أقل من 150 ر.س", () => selectProductByBudget(150)],
         ["أكثر من 150 ر.س", () => selectProductByBudget(1000)],
@@ -353,6 +346,7 @@
       ]);
     }
 
+    // Smart AI query handler for any product-related questions
     function handleUserChat() {
       const inp = document.getElementById('chatInput');
       const val = inp.value.trim();
@@ -360,16 +354,43 @@
       addUserMsg(val);
       inp.value = '';
       
-      if(chatState.step === 'order' || chatState.selectedProd) {
-        sendToWhatsApp();
+      const lowerVal = val.toLowerCase();
+
+      // فحص هل السؤال متعلق بمنتج معين مدخل في المتجر
+      const matchedProduct = storeData.products.find(p => lowerVal.includes(p.name.toLowerCase()));
+
+      if (matchedProduct) {
+        selectSpecificProduct(matchedProduct);
+      } else if (lowerVal.includes('سعر') || lowerVal.includes('أسعار') || lowerVal.includes('كم') || lowerVal.includes('المنتجات')) {
+        showChatProducts();
+      } else if (lowerVal.includes('تواصل') || lowerVal.includes('واتساب') || lowerVal.includes('طلب') || lowerVal.includes('شراء')) {
+        if(storeData.products.length > 0) {
+          selectSpecificProduct(storeData.products[0]);
+        } else {
+          addBotMsg("عذراً، يرجى إضافة منتجات في المتجر أولاً لكي أتمكن من تحويل طلبك.");
+        }
       } else {
-        addBotMsg("أهلاً بك، استلمت رسالتك. اضغط على أزرار الأصناف الظاهرة بالأعلى لاختيار منتجك بكل سهولة ودقة.");
+        // الرد الذكي العام المرتبط بمنتجات وأصناف المتجر
+        let reply = `بناءً على متجر <b>${storeData.name}</b>، نحن نُوفر الأجيال والأصناف التالية:<br><br>`;
+        if(storeData.products.length > 0) {
+          storeData.products.forEach(p => {
+            reply += `• ${p.name} (${p.price} ر.س)<br>`;
+          });
+          reply += `<br>هل تحب أن أساعدك في اختيار أحد هذه المنتجات وطلبها فوراً؟`;
+          
+          let options = [
+            ["🌿 استعراض واختيار المنتجات", () => showChatProducts()],
+            ["💬 التواصل الفوري مع البائع", () => sendToWhatsApp()]
+          ];
+          addBotMsg(reply, options);
+        } else {
+          addBotMsg("أهلاً بك، لا توجد منتجات مسجلة حالياً في هذا المتجر، يمكنك سؤال التاجر عن تفاصيل الأصناف القادمة.");
+        }
       }
     }
 
     document.getElementById('chatInput').onkeydown = (e) => { if(e.key === 'Enter') handleUserChat(); };
 
-    // Initial run
     updateUI();
   </script>
 </body>
